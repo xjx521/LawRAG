@@ -198,6 +198,8 @@
 - ✅ `docs/adr/` ADR-001~011 + 索引 / `docs/面试弹药库.md`
 - ✅ `docs/任务单/M0-地基.md`
 - ✅ 本地 git 提交（分支 `main`）
+- ✅ **远程仓库已推送** —— `github.com/xjx521/LawRAG`，本地与 `origin/main` 同指（`venv/` 和 `.env` 均已正确忽略）
+- ✅ **MySQL 容器已起** —— `lawrag-mysql` healthy，`docker compose up -d mysql` 执行完毕
 
 ### 进行中：M0 地基（设计讨论阶段）
 
@@ -216,13 +218,14 @@
 
 ### 环境决策（2026-09-11 确认）
 
-- **MySQL = Docker 里新起一个**，宿主机端口 **3307**（3306 已被本机原有 MySQL 占用，PID 6636）。配置见 `docker/docker-compose.yml`
+- **MySQL = Docker 里新起一个**，宿主机端口 **3307**（3306 已被本机原有 MySQL 占用，PID 6636）。配置见 `docker/docker-compose.yml`。
+  **已实测起库**：MySQL 8.4.11 / 库 `lawrag` 已建 / `utf8mb4_unicode_ci` / 时区 `+08:00` / 容器 healthy
 - **硅基流动 API Key 推迟到 M3 再注册**（rerank 接口到 M3 才用到）
-- **GitHub 暂时推不上去**：`gh` CLI 未装，且 GitHub 连接被重置（连 gowork 的 remote 也连不上），用户自己也登不进去。本地 git 正常提交，等网络恢复再 push
+- ~~GitHub 推不上去~~ → **已解决**：远程仓库 `github.com/xjx521/LawRAG` 已建并推送成功
 
 ### 下一步
 
 1. 继续 M0 设计讨论 **Q2**（Provider 为什么抽象）
 2. Q1-Q5 讨论完 → 按任务单动手写代码（Day 1 骨架 → Day 2 Provider 抽象）
-3. GitHub 网络恢复后：建仓库 + `git push -u origin main`
-4. 用户方便时启动 Docker Desktop 并 `docker compose up -d mysql`（M1 前需要）
+
+**环境侧已无阻塞**：远程仓库已推送、MySQL 容器已起。M1 可以直接开写。
