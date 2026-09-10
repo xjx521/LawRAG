@@ -1,0 +1,59 @@
+# ============================================================
+# LawRAG 依赖
+# ⚠️ 首次装完后请 pip freeze > requirements.lock.txt 锁定版本
+#    本文件保持宽松（>=），锁文件用于复现
+# ============================================================
+
+# ---------- Web 框架 ----------
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9        # 文件上传
+sse-starlette>=2.0             # 问答流式输出（SSE）
+
+# ---------- 配置与校验 ----------
+pydantic>=2.7
+pydantic-settings>=2.3
+python-dotenv>=1.0
+
+# ---------- 数据库 ----------
+SQLAlchemy>=2.0
+alembic>=1.13
+aiomysql>=0.2                  # 异步 MySQL 驱动
+PyMySQL>=1.1                   # sqlalchemy 同步兜底 / alembic 迁移
+
+# ---------- LLM / RAG 框架 ----------
+langchain>=0.3
+langchain-core>=0.3
+langchain-community>=0.3
+langchain-text-splitters>=0.3
+langchain-ollama>=0.2          # 本地 Ollama（qwen2.5:7b / bge-m3）
+langchain-chroma>=0.2
+langgraph>=0.2                 # Agentic RAG 的图编排
+
+# ---------- 向量库 ----------
+chromadb>=0.5
+
+# ---------- 检索组件 ----------
+jieba>=0.42                    # BM25 中文分词（配 THUOCL_law.txt 法律词典）
+rank-bm25>=0.2                 # 纯 BM25 对照实现（不带 LangChain 的版本）
+
+# ---------- 文档解析 ----------
+pymupdf>=1.24                  # PDF 文本层提取
+markdown-it-py>=3.0            # Markdown 解析（法条原文是 md 格式）
+
+# ---------- 可靠性 ----------
+tenacity>=8.3                  # 超时重试（LLM / rerank API）
+
+# ---------- 可观测 ----------
+structlog>=24.1                # 结构化日志
+
+# ---------- 测试与质量 ----------
+pytest>=8.2
+pytest-asyncio>=0.23
+httpx>=0.27                    # FastAPI TestClient 依赖
+import-linter>=2.0             # ★ 强制分层依赖单向，违规报错
+
+# ---------- 前端 ----------
+streamlit>=1.35
+requests>=2.32
+pandas>=2.2
