@@ -188,20 +188,41 @@
 
 ## 七、当前状态与下一步
 
-**已完成**（2026-09-11）：
-- ✅ 计划讨论与批准
+### 已完成（2026-09-11 立项日）
+
+- ✅ 计划讨论与批准（11 条决策 → ADR-001~011）
 - ✅ `D:\LawRAG` 目录结构 + 20 个 `__init__.py`
-- ✅ venv 复制 + 路径修复 + 6 个缺失包补装（sse-starlette / structlog / import-linter / pytest / pytest-asyncio / pymupdf）
-- ✅ `.gitignore` / `.env.example` / `requirements.txt`
-- ✅ `CLAUDE.md`（7677 字节）
-- ✅ `docs/PROJECT-MEMORY.md`（本文件）
-- ✅ ADR-001 ~ ADR-011
+- ✅ venv 复制 + 45 个 `.exe` 启动器旧路径修复 + 补装 6 个包
+- ✅ `.gitignore` / `.env.example` / `requirements.txt` / `docker/docker-compose.yml`
+- ✅ `CLAUDE.md`（7.5KB）/ `docs/PROJECT-MEMORY.md` / `README.md`
+- ✅ `docs/adr/` ADR-001~011 + 索引 / `docs/面试弹药库.md`
+- ✅ `docs/任务单/M0-地基.md`
+- ✅ 本地 git 提交（分支 `main`）
 
-**下一步**：
-1. `git init` + 建 GitHub 独立仓库
-2. 出 **M0 任务单**（地基），开始第一个里程碑
+### 进行中：M0 地基（设计讨论阶段）
 
-**已确认的环境决策**（2026-09-11）：
-- **MySQL = Docker 里新起一个**，宿主机端口 **3307**（3306 已被本机原有 MySQL 占用）。配置见 `docker/docker-compose.yml`
-- **硅基流动 API Key 推迟到 M3 再注册**（rerank 接口到 M3 才用）
-- **GitHub 暂时推不上去**：`gh` CLI 未装 + GitHub 连接被重置，连 gowork 的 remote 也连不上，且用户自己也登不进去。本地 git 正常提交，等网络恢复再 push
+**规则**：Q1-Q5 五个设计讨论**全部讨论通了才写代码**，不许跳步。
+
+| # | 讨论题 | 状态 | 结论 |
+|---|--------|------|------|
+| Q1 | 为什么后端要分层？ | ✅ 已过 | 用户答对：**评估脚本没有 HTTP 服务器，不分层则 core 没法复用**。补充第二层收益：想给检索逻辑写单测，不分层必须先起 HTTP 服务器 |
+| Q2 | Provider 为什么抽象？ | ⬜ | 核心是"看起来过度设计，其实不是"——切换是既定需求（ADR-004/005），且评估实验要"一次只改一个变量"，`NoopReranker` 是实验设计的一部分 |
+| Q3 | 统一异常的意义？ | ⬜ | 业务码用字符串不用数字 / 区分用户错误(4xx)与系统错误(5xx，不给用户看 traceback) / 全局兜底 |
+| Q4 | 健康检查检查什么？ | ⬜ | 不是 `{"status":"ok"}` 而是**依赖探活**；快速/深度分两个接口；`degraded` 状态语义 |
+| Q5 | 为什么 core/ 不许 import FastAPI？ | ⬜ | M5 评估脚本要复用同一内核；同一检索逻辑两个入口 |
+
+**Q1 的讨论方式（可复用到后续）**：给两段做同一件事的代码（不分层 vs 分层），让用户判断"多绕这一圈赚到了什么"，并给一个**具体场景做锚点**（"M5 的评估脚本是命令行的，没有 HTTP 服务器，写法 A 能用吗？"）。
+效果：用户直接答中要害——比抽象地问"为什么要分层"好答得多。**后续讨论继续用这招：给具体场景，不给抽象概念。**
+
+### 环境决策（2026-09-11 确认）
+
+- **MySQL = Docker 里新起一个**，宿主机端口 **3307**（3306 已被本机原有 MySQL 占用，PID 6636）。配置见 `docker/docker-compose.yml`
+- **硅基流动 API Key 推迟到 M3 再注册**（rerank 接口到 M3 才用到）
+- **GitHub 暂时推不上去**：`gh` CLI 未装，且 GitHub 连接被重置（连 gowork 的 remote 也连不上），用户自己也登不进去。本地 git 正常提交，等网络恢复再 push
+
+### 下一步
+
+1. 继续 M0 设计讨论 **Q2**（Provider 为什么抽象）
+2. Q1-Q5 讨论完 → 按任务单动手写代码（Day 1 骨架 → Day 2 Provider 抽象）
+3. GitHub 网络恢复后：建仓库 + `git push -u origin main`
+4. 用户方便时启动 Docker Desktop 并 `docker compose up -d mysql`（M1 前需要）
