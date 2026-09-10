@@ -75,7 +75,7 @@
 | Ollama | `OLLAMA_MODELS=D:\Ollama\models`，服务必须带此环境变量启动 |
 | 模型 | LLM `qwen2.5:7b` / Embedding `bge-m3`（1024 维） |
 | Rerank | 云端硅基流动 `BAAI/bge-reranker-v2-m3`（抽象成接口，可切本地） |
-| 数据库 | MySQL（`ASYNC_DATABASE_URL`，见 `.env.example`） |
+| 数据库 | MySQL 跑在 Docker，宿主机端口 **3307**（3306 被本机原有 MySQL 占用）。起库：`cd docker && docker compose up -d mysql` |
 | 向量库 | ChromaDB（抽象成接口，可切 Qdrant） |
 
 **已知环境问题（非代码错）**：GBK 控制台打印中文/emoji 会 `UnicodeEncodeError`。

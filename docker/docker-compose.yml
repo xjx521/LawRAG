@@ -1,0 +1,62 @@
+# ============================================================
+# LawRAG 基础设施
+#
+# 用法：
+#   cd docker
+#   docker compose up -d mysql      # 只起数据库
+#   docker compose ps               # 看状态
+#   docker compose logs -f mysql    # 看日志
+#   docker compose down             # 停（数据保留在 volume 里）
+#   docker compose down -v          # 停并删数据（慎用）
+#
+# ⚠️ 本机 3306 端口已被现有 MySQL 占用（PID 6636），
+#    所以本服务映射到宿主机 **3307**，互不干扰。
+#
+# M8 阶段会在这里追加 backend / frontend 两个 service。
+# ============================================================
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: lawrag-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-lawrag_root_dev}
+      MYSQL_DATABASE: lawrag # 容器首次启动时自动建库
+      MYSQL_USER: lawrag # 专用账号（不用 root 连应用）
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lawrag_dev_pwd}
+      TZ: Asia/Shanghai
+
+    # 命令行参数：字符集必须显式指定 utf8mb4
+    # 默认的 utf8 是"阉割版"（最多 3 字节），存不了 emoji 和部分生僻汉字
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+
+    ports:
+      # 只绑 127.0.0.1 —— 不暴露到局域网，避免同网段别人能连你的库
+      # 左边是宿主机端口(3307)，右边是容器内端口(3306)
+      - "127.0.0.1:3307:3306"
+
+    volumes:
+      # 命名卷：容器删了数据还在（这是 volume 和容器可写层的区别）
+      - lawrag_mysql_data:/var/lib/mysql
+
+    healthcheck:
+      # 让 M1 的代码能"等数据库就绪再连"，而不是起来就报连接失败
+      # $$ 是为了转义，让 compose 把 $ 传给容器里的 shell 而不是自己解析
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s # 首次启动要初始化数据目录，给足冷启动时间
+
+volumes:
+  lawrag_mysql_data:
+    name: lawrag_mysql_data

@@ -201,7 +201,7 @@
 1. `git init` + 建 GitHub 独立仓库
 2. 出 **M0 任务单**（地基），开始第一个里程碑
 
-**待用户确认的小事**：
-- GitHub 仓库名（建议 `LawRAG`）
-- 硅基流动 API Key 是否要新注册（M3 rerank 才用到，不急）
-- MySQL 沿用本地实例还是 Docker 里起一个（影响 M1）
+**已确认的环境决策**（2026-09-11）：
+- **MySQL = Docker 里新起一个**，宿主机端口 **3307**（3306 已被本机原有 MySQL 占用）。配置见 `docker/docker-compose.yml`
+- **硅基流动 API Key 推迟到 M3 再注册**（rerank 接口到 M3 才用）
+- **GitHub 暂时推不上去**：`gh` CLI 未装 + GitHub 连接被重置，连 gowork 的 remote 也连不上，且用户自己也登不进去。本地 git 正常提交，等网络恢复再 push

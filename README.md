@@ -78,16 +78,19 @@ python -m venv venv
 venv\Scripts\pip.exe install -r requirements.txt
 
 # 2. 配置
-cp .env.example .env    # 填入 MySQL 密码、硅基流动 API Key
+cp .env.example .env    # 如需修改端口/密码，改这里
 
-# 3. 数据库
-cd backend && alembic upgrade head
+# 3. 起数据库（MySQL 跑在 Docker，宿主机端口 3307）
+cd docker && docker compose up -d mysql && cd ..
 
-# 4. 导入法规语料（公有领域，见《著作权法》第五条）
+# 4. 建表
+cd backend && alembic upgrade head && cd ..
+
+# 5. 导入法规语料（公有领域，见《著作权法》第五条）
 python scripts/import_laws.py
 python scripts/parse_laws.py
 
-# 5. 起服务
+# 6. 起服务
 uvicorn backend.app.main:app --reload     # 后端 http://127.0.0.1:8000/docs
 streamlit run frontend/app.py             # 前端 http://127.0.0.1:8501
 ```
