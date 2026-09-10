@@ -74,7 +74,7 @@
 | Ollama | `OLLAMA_MODELS=D:\Ollama\models`，服务必须带此环境变量启动 |
 | 模型 | LLM `qwen2.5:7b` / Embedding `bge-m3`（1024 维） |
 | Rerank | 云端硅基流动 `BAAI/bge-reranker-v2-m3`（抽象成接口，可切本地） |
-| 数据库 | MySQL 跑在 Docker，宿主机端口 **3307**（3306 被本机原有 MySQL 占用），容器 `lawrag-mysql` **已起**。起库：`cd docker && docker compose up -d mysql` |
+| 数据库 | MySQL 跑在 Docker，宿主机端口 **3307**（3306 被本机原有 MySQL 占用），容器已起。重启：`cd docker && docker compose up -d mysql` |
 | 向量库 | ChromaDB（抽象成接口，可切 Qdrant） |
 
 **已知环境问题（非代码错）**：GBK 控制台打印中文/emoji 会 `UnicodeEncodeError`。
@@ -146,4 +146,4 @@
 - ⬜ Q2 Provider 为什么抽象（"看起来过度设计，其实不是"）
 - ⬜ Q3 统一异常的意义　⬜ Q4 健康检查检查什么　⬜ Q5 core/ 不许 import FastAPI
 
-**环境就绪**：远程仓库已推送（`github.com/xjx521/LawRAG`，分支 `main`）· MySQL 容器 `lawrag-mysql` 已起且 healthy（宿主端口 3307，库 `lawrag`，utf8mb4_unicode_ci，+08:00）。
+**环境就绪**：远程仓库已推送 `xjx521/LawRAG`（`main`）· MySQL 容器已起（3307，healthy）。
