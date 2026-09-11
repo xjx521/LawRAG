@@ -1,0 +1,56 @@
+[project]
+name = "lawrag"
+version = "0.1.0"
+description = "面向法律法规领域的检索增强生成系统"
+requires-python = ">=3.11"
+
+# ============================================================
+# import-linter：把"分层依赖单向"从口头约定变成一条能拦住你的规则
+#
+# 为什么需要它（见 docs/adr/ADR-012）：
+#   人靠自觉一定会烂，尤其是赶进度的时候。写着写着 core 里就出现
+#   `from fastapi import ...`，三个月后没人记得当初为什么分层。
+#   有了契约，违规 = lint-imports 退出码非 0 = 提交被拦。
+#
+# 用法：
+#   venv\Scripts\lint-imports.exe
+# ============================================================
+[tool.importlinter]
+root_package = "backend"
+# 契约 2 要禁止 "core 依赖 fastapi" —— fastapi 是**第三方包**，
+# 默认它不在分析图里，所以必须显式打开这个开关。
+include_external_packages = true
+
+# ---------- 契约 1：四层单向依赖 ----------
+# 列表从上到下是"从外到内"，上层可以调下层，下层不许反过来调上层。
+#   api（薄，只做 HTTP 转换）→ services（编排）→ core（内核）→ models（数据）
+[[tool.importlinter.contracts]]
+name = "分层单向：api → services → core → models"
+type = "layers"
+layers = [
+    "backend.app.api",
+    "backend.app.services",
+    "backend.app.core",
+    "backend.app.models",
+]
+
+# ---------- 契约 2：内核不认识 Web 框架 ----------
+# core 要能被命令行脚本 / 测试 / Agent 工具层直接调用，
+# 它不该知道 HTTP 的存在（见 docs/任务单/M0-地基.md 的 Q5）。
+[[tool.importlinter.contracts]]
+name = "core 不许依赖 Web 框架（fastapi / starlette / uvicorn）"
+type = "forbidden"
+source_modules = ["backend.app.core"]
+forbidden_modules = ["fastapi", "starlette", "uvicorn"]
+
+# ---------- 契约 3：数据层不许反向依赖 ----------
+# models 是最底层，只该依赖 SQLAlchemy 这类第三方库。
+[[tool.importlinter.contracts]]
+name = "models 不许依赖 core / services / api"
+type = "forbidden"
+source_modules = ["backend.app.models"]
+forbidden_modules = [
+    "backend.app.core",
+    "backend.app.services",
+    "backend.app.api",
+]

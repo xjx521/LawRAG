@@ -210,8 +210,8 @@
 | Q1 | 为什么后端要分层？ | ✅ 已过 | 用户答对：**评估脚本没有 HTTP 服务器，不分层则 core 没法复用**。补充第二层收益：想给检索逻辑写单测，不分层必须先起 HTTP 服务器 |
 | Q2 | Provider 为什么抽象？ | ✅ 已过（2 轮） | 核心收益 = **可替换 + 可测试**：把变化收敛到 `.env` + factory，**变化成本 O(N 个调用点) → O(1)**，且保证"一次只改一个变量"（M5 对照实验的前提）。用户首答偏成"稳定性 + 减少冗余代码"——抽象其实是**净增**代码；稳定性来自 tenacity 重试+降级，与接口抽象无关，是两件事 |
 | Q3 | 统一异常的意义？ | ✅ 已过（2 轮） | `code`（字符串，给前端代码/日志/测试断言）≠ `message`（给终端用户）≠ `detail`（给开发）。字符串优于数字：grep 不误伤、不用维护码表、代码自解释。不写兜底 → 统一结构对"意料之外的 bug"**失效**（FastAPI 默认 `{"detail":...}`）+ traceback 泄露内部结构（安全事故）。**本项目选真状态码 4xx/5xx + body 统一结构**：全返回 200 = 对监控撒谎，且 `/health/deep` 的 degraded、M4 的 trace 计量都依赖基础设施能读状态码 |
-| Q4 | 健康检查检查什么？ | ⬜ | 不是 `{"status":"ok"}` 而是**依赖探活**；快速/深度分两个接口；`degraded` 状态语义 |
-| Q5 | 为什么 core/ 不许 import FastAPI？ | ⬜ | M5 评估脚本要复用同一内核；同一检索逻辑两个入口 |
+| Q4 | 健康检查检查什么？ | ✅ 已过（2 轮） | 健康检查的价值是**坏了让你知道**（MTTD），不是"好时返回 ok"。**调用者是机器**：`/health` 给负载均衡/K8s 探针（每秒级、必须无副作用纯内存返回）；`/health/deep` 给人工排查/启动自检/定时巡检（分钟级、可真探依赖）。**拆两个的真实理由是调用频率差 3 个数量级**（1000 实例 × 每秒 1 次 × 3 依赖 = 每秒 3000 次无谓连接）。`degraded` = 部分能力下降主功能仍可用（rerank 挂 → 降级 Noop）；`down` = **核心链路断了**（MySQL 挂），**不是进程崩溃**——用户在此又犯了误解 B。探到 reranker 挂**不能返回 500**：会触发 K8s 重启，而重启解决不了 API Key 过期 → **重启风暴 / 级联失败**。正解：状态码表达"探测是否成功"（200），指标（Prometheus）表达"依赖是否健康" |
+| Q5 | 为什么 core/ 不许 import FastAPI？ | ✅ 已过（2 轮） | 用户首答猜"炸在 import"，**错**：FastAPI 装在同一 venv，import 成功；且 import 只执行一次（`sys.modules` 缓存），不是"每次检索都 import"。真实炸点是 **`raise HTTPException(404)` 没人接**——命令行脚本没有 HTTP 请求周期，语义被借走 → 整批评估在第 37 条 query 处崩掉、前面结果全丢。反向 import 的机制是**循环 import**（core → api → services → core），报 `ImportError: partially initialized module` 且**报错时机随机**。核心收益：一个业务异常**三种翻译**（HTTP→404 / CLI→exit(1) / Agent 工具→`{"error": ...}` 给 LLM）。**切法**：错误码枚举 + 异常类 → `core`；统一响应结构 + `@app.exception_handler` → `api`（用户首答正好切反） |
 
 **Q1 的讨论方式（可复用到后续）**：给两段做同一件事的代码（不分层 vs 分层），让用户判断"多绕这一圈赚到了什么"，并给一个**具体场景做锚点**（"M5 的评估脚本是命令行的，没有 HTTP 服务器，写法 A 能用吗？"）。
 效果：用户直接答中要害——比抽象地问"为什么要分层"好答得多。**后续讨论继续用这招：给具体场景，不给抽象概念。**
@@ -232,7 +232,17 @@
 
 ### 下一步
 
-1. 继续 M0 设计讨论 **Q4**（健康检查检查什么），然后 Q5
-2. Q1-Q5 讨论完 → 按任务单动手写代码（Day 1 骨架 → Day 2 Provider 抽象）
+1. **Day 1 编码中**：`config.py`（助手给）✅ / import-linter 3 契约（助手给）✅ / 用户写 `errors.py` + `main.py` + `/health` `/health/deep`
+2. Day 1 验收（任务单 §四）→ Day 2 Provider 抽象
+
+### M0 Day 1 已完成部分（助手给）
+
+- ✅ `backend/app/config.py` —— pydantic-settings 读 `.env`。要点：`__file__` 反推项目根目录算 `.env` 绝对路径（避免 CWD 依赖这一"极难排查的 bug"）；`@lru_cache` 单例；`.env` 新增 `HEALTH_CHECK_TIMEOUT=3.0`（探活超时必须**独立于业务超时且短**）
+- ✅ `pyproject.toml` —— import-linter 3 条契约：① 四层单向 `api → services → core → models` ② core 不许 import fastapi/starlette/uvicorn ③ models 不许反向 import。**必须开 `include_external_packages = true`**（否则禁止第三方包的契约直接报配置错误）
+- ✅ 已实测"故意破坏"：在 `core/` 写 `from fastapi import HTTPException` + `from backend.app.api.v1 import chat` → 两条契约都报错并给出**文件+行号**，清理后恢复 KEPT（对应任务单验收 #6）
+- ✅ `.env` 已从 `.env.example` 生成（gitignored，勿提交）
+
+**环境坑（新增）**：`lint-imports` 走 rich 输出，GBK 控制台会 `UnicodeEncodeError` 崩掉。
+**解法**：命令前加 `PYTHONUTF8=1`，即 `PYTHONUTF8=1 venv/Scripts/lint-imports.exe`。
 
 **环境侧已无阻塞**：远程仓库已推送、MySQL 容器已起。M1 可以直接开写。
