@@ -144,4 +144,5 @@
 - ✅ **Q1-Q5 全部通关**（结论与纠正记录见 `docs/PROJECT-MEMORY.md` §7）
 - ⚠️ **贯穿性误解（持续纠）**：① 错误码当成给用户看的 ② 以为未捕获异常会终止进程
 - **Day 1**：✅ `config.py` + ✅ import-linter 3 契约（实测能拦）· ⬜ 你写 `errors.py` / `main.py` / `/health/deep`
-- **环境**：跑 `lint-imports` 前加 `PYTHONUTF8=1`（否则 GBK 崩）· MySQL 3307 healthy · 远程 main 已同步
+- ▶ **下次从这里开始（2026-09-12）**：先让用户答 `config.py` 的两个问题（去掉 `@lru_cache` 会怎样 / `os.getenv()` 的具体坑）→ 答完给 `errors.py` 的【骨架】
+- **环境**：跑 `lint-imports` 前加 `PYTHONUTF8=1`（否则 GBK 崩）· MySQL 3307 healthy · `.env` 已生成

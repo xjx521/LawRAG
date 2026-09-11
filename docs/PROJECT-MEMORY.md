@@ -230,10 +230,16 @@
 - **硅基流动 API Key 推迟到 M3 再注册**（rerank 接口到 M3 才用到）
 - ~~GitHub 推不上去~~ → **已解决**：远程仓库 `github.com/xjx521/LawRAG` 已建并推送成功
 
-### 下一步
+### 下一步 ★ 暂停点（2026-09-11 收工，2026-09-12 继续）
 
-1. **Day 1 编码中**：`config.py`（助手给）✅ / import-linter 3 契约（助手给）✅ / 用户写 `errors.py` + `main.py` + `/health` `/health/deep`
-2. Day 1 验收（任务单 §四）→ Day 2 Provider 抽象
+**用户说"记住进度明天开始" —— 下次直接从下面第 2 步接上，不要重讲 Q1-Q5。**
+
+1. **已完成**：设计讨论 5/5；`config.py`（助手给，已跑通 smoke test）；`pyproject.toml` import-linter 3 契约（已实测能拦）；`.env` 已生成（gitignored）
+2. ▶ **下次从这里开始**：先让用户回答 `config.py` 的两个理解题——
+   - `get_settings()` 的 `@lru_cache` 去掉，**具体到本项目哪一步**会变慢/变糟？
+   - `os.getenv()` 相比 pydantic-settings 的**具体坑**：会怎么写、什么时候才炸、炸的时候你在干什么？
+3. 答完 → 给 `errors.py` 的【骨架】（任务单 1.2，**用户手写** ★），再往下是 `main.py`（1.3 骨架）与 `/health` `/health/deep`（1.4 提示 ★★）
+4. Day 1 验收（任务单 §四，9 条）→ Day 2 Provider 抽象
 
 ### M0 Day 1 已完成部分（助手给）
 
