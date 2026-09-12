@@ -139,10 +139,10 @@
 
 ## 八、下一步
 
-**当前：M0 —— 设计讨论 5/5 通关，进入 Day 1 写代码**（任务单 `docs/任务单/M0-地基.md`）
+**当前：M0 Day 1 —— `errors.py` 骨架已给，等你填**（`docs/任务单/M0-地基.md`）
 
-- ✅ **Q1-Q5 全部通关**（结论与纠正记录见 `docs/PROJECT-MEMORY.md` §7）
-- ⚠️ **贯穿性误解（持续纠）**：① 错误码当成给用户看的 ② 以为未捕获异常会终止进程
-- **Day 1**：✅ `config.py` + ✅ import-linter 3 契约（实测能拦）· ⬜ 你写 `errors.py` / `main.py` / `/health/deep`
-- ▶ **下次从这里开始（2026-09-12）**：先让用户答 `config.py` 的两个问题（去掉 `@lru_cache` 会怎样 / `os.getenv()` 的具体坑）→ 答完给 `errors.py` 的【骨架】
-- **环境**：跑 `lint-imports` 前加 `PYTHONUTF8=1`（否则 GBK 崩）· MySQL 3307 healthy · `.env` 已生成
+- ✅ Q1-Q5 通关 · ✅ `config.py` + import-linter 3 契约 · ✅ 两问拷问已记录（`docs/PROJECT-MEMORY.md` §7）
+- ▶ **下次从这里开始（2026-09-13）**：① `backend/tests/tests_config.py` 改名 `test_config.py`（复数名，pytest 不收集）→ 看 `test_b` 失败 → 用 `get_settings.cache_clear()` 修 ② 填 `errors.py` 的 7 处 TODO
+- 之后：`main.py`【骨架】→ `/api/health` + `/health/deep`【提示】→ Day 1 验收
+- ⚠️ **持续纠**：① 错误码当成给用户看的 ② 未捕获异常与进程生死（已埋成必答题）③ **结论对但原因错** ④ **量级靠感觉**（实测 `Settings()`=2.24ms）
+- **环境**：`lint-imports` 前加 `PYTHONUTF8=1`
